@@ -510,7 +510,7 @@ async function cerrarTinder(){
 
 /* ============ 3 · Deslizador ============ */
 function iniDesliza(){
-  paso = { n: PAQUETE_DESLIZADOR.inicio, q:0, dado:[], explorado:new Set([PAQUETE_DESLIZADOR.inicio]) };
+  paso = { n: PAQUETE_DESLIZADOR.inicio, q:0, dado:[], resp:null, explorado:new Set([PAQUETE_DESLIZADOR.inicio]) };
   pintarDesliza();
 }
 function plata(v){ return '$' + Math.round(v).toLocaleString('es-CO'); }
@@ -553,21 +553,29 @@ function pintarPreguntasDesliza(){
   const i = paso.q - 1;
   if(i >= p.preguntas.length) return cerrarDesliza();
   const q = p.preguntas[i];
+  const r = paso.resp;
+  const cerrada = r !== null && r !== undefined;
+  const bien = cerrada && r === q.ok;
   b.innerHTML = `<div class="panel"><span class="tag">Pregunta ${paso.q} de ${p.preguntas.length}</span>
     <h3 style="font-size:20px; line-height:1.25;">${q.q}</h3>
     <div style="display:flex; flex-direction:column; gap:9px; margin-top:14px;">
-      ${q.ops.map((o,k) => `<button class="ficha" style="width:100%; font-size:14px; padding:12px 13px;" onclick="respDesliza(${k})">${o}</button>`).join('')}
+      ${q.ops.map((o,k) => {
+        let extra = '';
+        if(cerrada) extra = k === q.ok ? 'background:#E4F8EC; border-color:var(--green);'
+                          : (k === r ? 'background:#FCE7E3; border-color:var(--red);' : 'opacity:.5;');
+        return `<button class="ficha" ${cerrada ? 'disabled' : ''} style="width:100%; font-size:14px; padding:12px 13px; ${extra}" onclick="respDesliza(${k})">${o}</button>`;
+      }).join('')}
     </div>
-    <div class="feedback" id="fb-desliza"></div></div>`;
+    ${cerrada ? `<div class="feedback show ${bien ? 'ok' : 'bad'}">
+      <b>${bien ? 'Correcto.' : 'No era esa.'}</b> ${q.why}
+      <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.q++;paso.resp=null;pintarDesliza();">Seguir</button></div>` : ''}
+  </div>`;
 }
 function respDesliza(k){
-  const q = PAQUETE_DESLIZADOR.preguntas[paso.q - 1];
-  const bien = k === q.ok;
-  paso.dado.push(bien);
-  const fb = $('fb-desliza');
-  fb.className = 'feedback show ' + (bien ? 'ok' : 'bad');
-  fb.innerHTML = `<b>${bien ? 'Correcto.' : 'No era esa.'}</b> ${q.why}
-    <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.q++;pintarDesliza();">Seguir</button>`;
+  if(paso.resp !== null && paso.resp !== undefined) return;   /* una sola vez */
+  paso.resp = k;
+  paso.dado.push(k === PAQUETE_DESLIZADOR.preguntas[paso.q - 1].ok);
+  pintarDesliza();
 }
 async function cerrarDesliza(){
   const ac = paso.dado.filter(Boolean).length;
@@ -711,30 +719,33 @@ async function revisarCuadro(){
 
 /* ============ 5 · Verdadero o falso ============ */
 function iniVof(){
-  paso = { i:0, dado:[], orden: VOF.map((_,k) => k).sort(() => Math.random() - .5) };
+  paso = { i:0, dado:[], resp:null, orden: VOF.map((_,k) => k).sort(() => Math.random() - .5) };
   pintarVof();
 }
 function pintarVof(){
   if(paso.i >= paso.orden.length) return cerrarVof();
   const v = VOF[paso.orden[paso.i]];
   const pct = (paso.i / paso.orden.length) * 100;
+  const r = paso.resp;
+  const cerrada = r !== null && r !== undefined;
+  const bien = cerrada && r === v.ok;
   $('act-body').innerHTML = `<div class="panel"><span class="tag">Verdadero o falso</span>
     <div class="tprog">${paso.i + 1} de ${paso.orden.length}</div>
     <div class="tbar"><i style="width:${pct}%;"></i></div>
     <div class="vof-card">${v.t}</div>
     <div class="vof-btns">
-      <button class="v" onclick="vofTap(true)">Verdadero</button>
-      <button class="f" onclick="vofTap(false)">Falso</button></div>
-    <div class="feedback" id="fb-vof"></div></div>`;
+      <button class="v" ${cerrada ? 'disabled style="opacity:' + (r === true ? '1' : '.35') + ';"' : ''} onclick="vofTap(true)">Verdadero</button>
+      <button class="f" ${cerrada ? 'disabled style="opacity:' + (r === false ? '1' : '.35') + ';"' : ''} onclick="vofTap(false)">Falso</button></div>
+    ${cerrada ? `<div class="feedback show ${bien ? 'ok' : 'bad'}">
+      <b>${bien ? 'Bien.' : 'Era ' + (v.ok ? 'verdadero' : 'falso') + '.'}</b> ${v.why}
+      <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.i++;paso.resp=null;pintarVof();">Siguiente</button></div>` : ''}
+  </div>`;
 }
 function vofTap(r){
-  const v = VOF[paso.orden[paso.i]];
-  const bien = r === v.ok;
-  paso.dado.push(bien);
-  const fb = $('fb-vof');
-  fb.className = 'feedback show ' + (bien ? 'ok' : 'bad');
-  fb.innerHTML = `<b>${bien ? 'Bien.' : 'Era ' + (v.ok ? 'verdadero' : 'falso') + '.'}</b> ${v.why}
-    <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.i++;pintarVof();">Siguiente</button>`;
+  if(paso.resp !== null && paso.resp !== undefined) return;   /* una sola vez */
+  paso.resp = r;
+  paso.dado.push(r === VOF[paso.orden[paso.i]].ok);
+  pintarVof();
 }
 async function cerrarVof(){
   const ac = paso.dado.filter(Boolean).length;
