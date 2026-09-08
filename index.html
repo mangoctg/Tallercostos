@@ -164,7 +164,7 @@
     <div class="hdr"><span class="who" id="hdr-nombre">—</span><span class="pts" id="hdr-pts">0</span></div>
     <div class="paradas" id="lista-paradas"></div>
     <div class="panel" id="cierre" style="display:none; margin-top:15px;"></div>
-    <button class="btn ghost sm" style="margin-top:13px;" onclick="salir()">Salir</button>
+    <button class="btn ghost sm" style="margin-top:13px;" onclick="salir()" id="btn-salir">Salir</button>
   </div>
 
   <div class="view" id="view-act">
@@ -381,7 +381,7 @@ const roster = ["Belen Castro","Mari Sol Garcia","Maria Jose Coneo","Sareiny Sua
 firebaseListo.then(x => { if(!x) { const el = document.getElementById('offline-msg'); if(el) el.style.display = 'block'; } });
 
 /* ============ Estado ============ */
-let yo = null, act = null, paso = null;
+let yo = null, act = null, paso = null, simulacion = false;
 function $(id){ return document.getElementById(id); }
 function irA(v){
   document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
@@ -395,6 +395,7 @@ function nuevoYo(nombre){
 function total(){ return Object.values(yo.puntos).reduce((s,x) => s + x, 0); }
 async function guardarme(){
   yo.ts = Date.now();
+  if(simulacion) return;   /* la simulación del profe no toca las notas */
   await guardarDoc(PRE + yo.nombre.toLowerCase(), yo);
 }
 async function entrar(){
@@ -406,11 +407,20 @@ async function entrar(){
   yo.nombre = n;
   irA('mapa');
 }
-function salir(){ yo = null; irA('login'); }
+function salir(){
+  const era = simulacion;
+  yo = null; simulacion = false;
+  irA(era ? 'profe' : 'login');
+}
+function iniciarSimulacion(){
+  simulacion = true;
+  yo = nuevoYo('Profesor (simulación)');
+  irA('mapa');
+}
 
 function pintarMapa(){
   if(!yo) return;
-  $('hdr-nombre').textContent = yo.nombre;
+  $('hdr-nombre').innerHTML = yo.nombre + (simulacion ? ' <span style="font-size:10px; font-weight:800; background:var(--amber); color:var(--ink); padding:2px 7px; border-radius:9px; margin-left:5px;">ENSAYO</span>' : '');
   $('hdr-pts').textContent = total() + '/' + MAX_TOTAL;
   $('lista-paradas').innerHTML = PARADAS.map((p,i) => {
     const hecha = yo.hechas[p.id];
@@ -420,6 +430,7 @@ function pintarMapa(){
       <div class="sc">${hecha ? (yo.puntos[p.id]||0) + '/' + p.max : ''}</div>
     </div>`;
   }).join('');
+  const bs = $('btn-salir'); if(bs) bs.textContent = simulacion ? 'Volver al panel' : 'Salir';
   const listas = PARADAS.filter(p => yo.hechas[p.id]).length;
   const c = $('cierre');
   if(listas === PARADAS.length){
@@ -765,6 +776,9 @@ async function cargarNotas(){
           <span class="sc">${f.tot}/${MAX_TOTAL}</span></div>`).join('')}
     <button class="btn ghost sm" style="margin-top:12px;" onclick="cargarNotas()">Actualizar</button>
     <button class="btn ghost sm" style="margin-top:8px;" onclick="csvNotas()">Descargar CSV</button></div>
+    <div class="panel"><span class="tag">Simulación</span>
+      <p class="mini" style="margin:0 0 10px;">Recorre la actividad completa como si fueras estudiante. No se guarda nada ni aparece en las notas del salón.</p>
+      <button class="btn secondary" onclick="iniciarSimulacion()">Hacer la actividad</button></div>
     <div class="panel"><span class="tag">Dónde fallaron</span>
       ${['vf','di'].map(id => {
         const d = datosTinder(id);
