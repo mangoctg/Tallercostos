@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trippy · Cuánto cuesta de verdad</title>
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null;"
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Special+Elite&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --paper:#F3ECD8; --bg:#E7DBB8; --ink:#2B3A4A; --red:#A23B32;
+    --cyan:#3E7C8C; --purple:#6B5B95; --green:#3F6B4F; --amber:#C08A3E; --pink:#B5697A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{background:repeating-linear-gradient(0deg, rgba(43,58,74,.025) 0px, rgba(43,58,74,.025) 1px, transparent 1px, transparent 3px), var(--bg);
+    color:var(--ink); font-family:'Nunito',-apple-system,'Segoe UI',Roboto,sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-weight:700; margin:0;}
+  #app{max-width:540px; margin:0 auto; padding:14px 13px 50px;}
+  .view{display:none;} .view.active{display:block; animation:pop .25s ease;}
+  @keyframes pop{from{opacity:0; transform:scale(.98);} to{opacity:1; transform:scale(1);}}
+
+  .panel{background:var(--paper); border:2px solid var(--ink); border-radius:3px; padding:17px 15px; position:relative; box-shadow:0 2px 6px rgba(43,58,74,.18);}
+  .panel::before{content:""; position:absolute; inset:5px; border:1px solid var(--ink); opacity:.3; pointer-events:none;}
+  .panel + .panel{margin-top:15px;}
+  .tag{position:absolute; top:-12px; left:14px; background:var(--ink); color:var(--paper); font-family:'Special Elite','Courier New',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; padding:3px 10px; border-radius:2px;}
+
+  .btn{display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-weight:700; font-size:18px;
+    color:var(--paper); background:var(--red); padding:12px 18px; border:2px solid var(--ink); cursor:pointer; width:100%; border-radius:4px; box-shadow:0 2px 4px rgba(43,58,74,.25);}
+  .btn:active{transform:translateY(1px);}
+  .btn.secondary{background:var(--cyan);} .btn.ghost{background:var(--paper); color:var(--ink);} .btn.go{background:var(--green);}
+  .btn:disabled{opacity:.4;} .btn.sm{font-size:15px; padding:9px 12px;}
+  .row-btns{display:flex; gap:9px; margin-top:11px;} .row-btns .btn{width:auto; flex:1;}
+
+  label{display:block; font-weight:800; font-size:13px; margin-bottom:6px;}
+  input[type=text], input[type=password]{width:100%; font-family:'Nunito',-apple-system,'Segoe UI',Roboto,sans-serif; font-size:16px; font-weight:700; padding:11px 12px; border:1.5px solid var(--ink); border-radius:6px; background:#fff; color:var(--ink);}
+
+  .cover{text-align:center;}
+  .cover h1{font-size:32px; line-height:1.06;}
+  .cover .sub{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:18px; color:var(--red); margin:5px 0 14px;}
+  .cover p{font-size:14px; font-weight:700; line-height:1.5; margin:0 auto 16px; max-width:340px;}
+
+  .hdr{display:flex; align-items:center; gap:11px; background:var(--ink); color:var(--paper); padding:10px 13px; border-radius:8px; margin-bottom:14px;}
+  .hdr .who{flex:1; font-weight:800; font-size:14px;}
+  .hdr .pts{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:20px; background:var(--amber); color:var(--ink); padding:1px 11px; border-radius:6px;}
+
+  .paradas{display:flex; flex-direction:column; gap:11px;}
+  .parada{display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--ink); border-radius:9px; padding:12px 13px; cursor:pointer; box-shadow:0 4px 4px rgba(43,58,74,.2);}
+  .parada:active{transform:translate(2px,2px); box-shadow:0 2px 2px rgba(43,58,74,.2);}
+  .parada.hecha{background:#EFF9F2;}
+  .parada .n{width:40px; height:40px; flex-shrink:0; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:20px;}
+  .parada.hecha .n{background:var(--green);}
+  .parada .tx{flex:1; min-width:0;} .parada .tx b{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:17px; display:block;}
+  .parada .tx span{font-size:12px; font-weight:700; color:#666;}
+  .parada .sc{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:16px; color:var(--red); flex-shrink:0;}
+
+  .ahead{display:flex; align-items:center; gap:10px; margin-bottom:13px;}
+  .back{background:var(--ink); color:var(--paper); border:none; border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer; flex-shrink:0;}
+  .ahead h2{font-size:21px;} .ahead p{margin:2px 0 0; font-size:12.5px; font-weight:700; color:#555;}
+
+  /* Tinder */
+  .tprog{font-size:12px; font-weight:800; color:#777; text-align:center; margin-bottom:9px;}
+  .tbar{height:8px; background:#E7E2D2; border:1.5px solid var(--ink); border-radius:5px; overflow:hidden; margin-bottom:14px;}
+  .tbar i{display:block; height:100%; background:var(--cyan); transition:width .3s ease;}
+  .tcard{background:#fff; border:2.5px solid var(--ink); border-radius:14px; padding:30px 18px; text-align:center; font-size:19px; font-weight:800; line-height:1.35; min-height:140px; display:flex; align-items:center; justify-content:center; box-shadow:0 5px 5px rgba(43,58,74,.2);}
+  .tbtns{display:flex; gap:10px; margin-top:14px;}
+  .tbtns button{flex:1; border:2px solid var(--ink); border-radius:12px; padding:15px 8px; font-family:'Nunito',-apple-system,'Segoe UI',Roboto,sans-serif; font-weight:800; font-size:15px; cursor:pointer; color:#fff; line-height:1.25;}
+  .tbtns button small{display:block; font-size:10.5px; font-weight:700; opacity:.9; margin-top:3px;}
+  .tbtns .izq{background:var(--cyan);} .tbtns .der{background:var(--pink);}
+
+  /* Deslizador */
+  .slider-wrap{background:#fff; border:2px solid var(--ink); border-radius:10px; padding:14px 15px; margin-bottom:13px;}
+  .slider-wrap .big{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:38px; text-align:center; line-height:1;}
+  .slider-wrap .lbl{text-align:center; font-size:12px; font-weight:800; color:#666; margin-bottom:10px;}
+  input[type=range]{width:100%; height:34px; -webkit-appearance:none; background:transparent;}
+  input[type=range]::-webkit-slider-runnable-track{height:10px; background:#E7E2D2; border:1.5px solid var(--ink); border-radius:6px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:30px; height:30px; border-radius:50%; background:var(--amber); border:2.5px solid var(--ink); margin-top:-11px; cursor:pointer;}
+  input[type=range]::-moz-range-track{height:10px; background:#E7E2D2; border:1.5px solid var(--ink); border-radius:6px;}
+  input[type=range]::-moz-range-thumb{width:30px; height:30px; border-radius:50%; background:var(--amber); border:2.5px solid var(--ink); cursor:pointer;}
+  .lineas{margin-top:4px;}
+  .linea{display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px dashed #ddd; font-size:12.5px; font-weight:700;}
+  .linea:last-child{border-bottom:none;}
+  .linea .et{font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:2px 6px; border-radius:9px; border:1.5px solid var(--ink); flex-shrink:0;}
+  .linea .et.f{background:var(--pink); color:#fff;} .linea .et.v{background:var(--cyan); color:#fff;}
+  .linea .nm{flex:1; min-width:0;}
+  .linea .vl{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:15px; flex-shrink:0;}
+  .linea .vl.baja{color:var(--green);}
+
+  /* Sopa */
+  .ws-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:2px;}
+  .ws-cell{aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; border:1.5px solid var(--ink); background:#fff; border-radius:3px; cursor:pointer; user-select:none; color:var(--ink);}
+  .ws-cell.anchor{background:var(--amber);} .ws-cell.found{background:var(--green); color:#fff;}
+  .ws-chips{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;}
+  .ws-chip{font-size:10.5px; font-weight:800; padding:4px 9px; border:2px solid var(--ink); border-radius:13px; background:#fff;}
+  .ws-chip.found{background:var(--green); color:#fff; text-decoration:line-through;}
+
+  /* Presupuesto */
+  .bolsa{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; min-height:44px;}
+  .ficha{border:2px solid var(--ink); border-radius:9px; background:#fff; padding:8px 11px; font-size:12.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 0 rgba(43,58,74,.2); text-align:left;}
+  .ficha.sel{background:var(--amber); box-shadow:0 2px 0 rgba(43,58,74,.2), 0 0 0 3px rgba(192,138,62,.35);}
+  .cols{display:flex; gap:9px; margin-top:12px;}
+  .col{flex:1; border:2px dashed var(--ink); border-radius:10px; padding:10px 9px; min-height:120px; background:rgba(255,255,255,.5);}
+  .col h4{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:16px; text-align:center; margin-bottom:4px;}
+  .col .cuenta{text-align:center; font-size:10.5px; font-weight:800; color:#777; margin-bottom:8px;}
+  .col .puestos{display:flex; flex-direction:column; gap:6px;}
+  .puesto{border:1.5px solid var(--ink); border-radius:8px; background:#fff; padding:7px 9px; font-size:11.5px; font-weight:800; cursor:pointer; line-height:1.3;}
+  .vfrow{display:flex; gap:4px; margin-top:5px;}
+  .vfrow button{flex:1; border:1.5px solid var(--ink); border-radius:6px; background:var(--paper); font-size:9.5px; font-weight:800; padding:4px 2px; cursor:pointer; font-family:'Nunito',-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink);}
+  .vfrow button.on{background:var(--purple); color:#fff;}
+  .total-box{background:var(--ink); color:var(--paper); border-radius:10px; padding:14px; text-align:center; margin-top:13px;}
+  .total-box .cifra{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:31px; line-height:1.1;}
+  .total-box .det{font-size:12px; font-weight:700; opacity:.85; margin-top:4px;}
+
+  /* Verdadero o falso */
+  .vof-card{background:#fff; border:2.5px solid var(--ink); border-radius:14px; padding:26px 18px; text-align:center; font-size:18px; font-weight:800; line-height:1.35; min-height:130px; display:flex; align-items:center; justify-content:center; box-shadow:0 5px 5px rgba(43,58,74,.2);}
+  .vof-btns{display:flex; gap:10px; margin-top:14px;}
+  .vof-btns button{flex:1; border:2px solid var(--ink); border-radius:12px; padding:16px 8px; font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-weight:700; font-size:19px; cursor:pointer; color:#fff;}
+  .vof-btns .v{background:var(--green);} .vof-btns .f{background:var(--red);}
+
+  /* Compartidos */
+  .feedback{font-size:13px; font-weight:700; background:#FFF1CE; border:2px solid var(--ink); border-radius:9px; padding:10px 12px; margin-top:12px; line-height:1.45; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:#E4F8EC;} .feedback.bad{background:#FCE7E3;}
+  .veredicto{text-align:center; padding:16px; border:2px solid var(--ink); border-radius:11px; margin-bottom:13px; background:var(--amber);}
+  .veredicto .ico{font-size:34px;} .veredicto h2{font-size:24px; margin:4px 0 2px;}
+  .veredicto .gan{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:18px;}
+  .repaso{margin-top:12px;}
+  .rep-row{display:flex; gap:8px; align-items:flex-start; padding:8px 0; border-bottom:1px dashed #ddd; font-size:12.5px; font-weight:700; line-height:1.4;}
+  .rep-row:last-child{border-bottom:none;}
+  .rep-row .mk{flex-shrink:0; width:20px; text-align:center; font-size:14px;}
+  .rep-row.mal{color:#7a2f27;}
+  .mini{font-size:12px; font-weight:700; color:#666; line-height:1.45; margin:8px 0 0;}
+  .warn{font-size:13px; font-weight:800; color:var(--red); margin-top:8px; display:none;} .warn.show{display:block;}
+  .rk{display:flex; align-items:center; gap:11px; padding:9px 8px; border-bottom:2px solid var(--paper);}
+  .rk:last-child{border-bottom:none;}
+  .rk.yo{background:#FFF1CE; border-radius:8px;}
+  .rk .pos{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:18px; width:26px; text-align:center; flex-shrink:0;}
+  .rk .nm{flex:1; font-weight:800; font-size:13.5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rk .sc{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif; font-size:18px; color:var(--red); flex-shrink:0;}
+  .rk.pend{opacity:.5;}
+  .offline{background:var(--red); color:#fff; text-align:center; font-size:12px; font-weight:800; padding:7px; border-radius:6px; margin-bottom:12px; display:none;}
+  @media (max-width:370px){ .ws-cell{font-size:9.5px;} .cover h1{font-size:27px;} }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="offline" id="offline-msg">Sin conexión a la base de datos. Tu avance no se está guardando.</div>
+
+  <div class="view active" id="view-login">
+    <div class="panel cover">
+      <span class="tag">Actividad 3</span>
+      <h1>Cuánto cuesta de verdad</h1>
+      <div class="sub">Costos directos, indirectos, variables y fijos</div>
+      <p>Cinco paradas. Vas a clasificar líneas de costo, descubrir qué pasa cuando cambia el tamaño del grupo y cuadrar un presupuesto completo.</p>
+      <label for="in-roster" style="text-align:left;">¿Quién eres?</label>
+      <select id="in-roster" style="width:100%; font-family:'Nunito',-apple-system,'Segoe UI',Roboto,sans-serif; font-size:16px; font-weight:700; padding:11px 12px; border:1.5px solid var(--ink); border-radius:6px; background:#fff; color:var(--ink);"><option value="">Selecciona tu nombre…</option><option value="Belen Castro">Belen Castro</option><option value="Mari Sol Garcia">Mari Sol Garcia</option><option value="Maria Jose Coneo">Maria Jose Coneo</option><option value="Sareiny Suarez">Sareiny Suarez</option><option value="Stephania Marichal">Stephania Marichal</option><option value="Melanie Osorio">Melanie Osorio</option><option value="Valeria Torres">Valeria Torres</option></select>
+      <div class="warn" id="login-warn">Selecciona tu nombre.</div>
+      <button class="btn" style="margin-top:14px;" onclick="entrar()">Empezar</button>
+      <button class="btn ghost sm" style="margin-top:9px;" onclick="irA('profe')">Panel del profesor</button>
+    </div>
+  </div>
+
+  <div class="view" id="view-mapa">
+    <div class="hdr"><span class="who" id="hdr-nombre">—</span><span class="pts" id="hdr-pts">0</span></div>
+    <div class="paradas" id="lista-paradas"></div>
+    <div class="panel" id="cierre" style="display:none; margin-top:15px;"></div>
+    <button class="btn ghost sm" style="margin-top:13px;" onclick="salir()">Salir</button>
+  </div>
+
+  <div class="view" id="view-act">
+    <div class="ahead">
+      <button class="back" onclick="irA('mapa')">←</button>
+      <div><h2 id="act-tit">—</h2><p id="act-sub">—</p></div>
+    </div>
+    <div id="act-body"></div>
+  </div>
+
+  <div class="view" id="view-profe">
+    <div class="ahead">
+      <button class="back" onclick="irA('login')">←</button>
+      <div><h2>Panel del profesor</h2><p>Actividad de costos</p></div>
+    </div>
+    <div class="panel" id="profe-gate">
+      <span class="tag">Acceso</span>
+      <label for="profe-pass">Contraseña</label>
+      <input type="password" id="profe-pass" autocomplete="off">
+      <div class="warn" id="pass-warn">Contraseña incorrecta.</div>
+      <button class="btn" style="margin-top:12px;" onclick="entrarProfe()">Entrar</button>
+    </div>
+    <div id="profe-body" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+/* ============ 1 · Tinder: variable o fijo ============ */
+const TINDER_VF = {
+  izq:"Variable", der:"Fijo del grupo",
+  ayudaIzq:"Cambia con cada pasajero",
+  ayudaDer:"Se paga igual con 2 o con 10",
+  items:[
+    { t:"Almuerzo en la isla, por persona", lado:0, why:"Cada pasajero come lo suyo: si entran dos más, pagas dos almuerzos más." },
+    { t:"Alquiler de la lancha completa a Barú", lado:1, why:"La lancha vale lo mismo lleve 4 o lleve 12. El costo no se mueve, se reparte." },
+    { t:"Entrada al Castillo San Felipe", lado:0, why:"Se paga por cabeza. Es el ejemplo más limpio de costo variable." },
+    { t:"Honorarios del guía por el día", lado:1, why:"El guía cobra por el día, no por cuánta gente atienda." },
+    { t:"Seguro de asistencia médica por viajero", lado:0, why:"Se emite una póliza por persona, así que crece con el grupo." },
+    { t:"Van contratada para el traslado del grupo", lado:1, why:"Contratas el vehículo, no los asientos. Con 3 pasajeros pagas la van entera igual." },
+    { t:"Coctel de bienvenida en el hotel", lado:0, why:"Uno por huésped: es variable aunque sea barato." },
+    { t:"Permiso de ingreso al parque para el grupo", lado:1, why:"Es una tarifa por grupo, no por persona." },
+    { t:"Habitación doble por noche", lado:0, why:"Con más pasajeros necesitas más habitaciones: escala con el grupo." },
+    { t:"Fotógrafo contratado para la salida", lado:1, why:"Cobra por la jornada. Le da igual si retrata a 5 o a 15." },
+    { t:"Chaleco salvavidas por pasajero", lado:0, why:"Uno por cabeza, sin excepción." },
+    { t:"Peaje y combustible del recorrido", lado:1, why:"El carro gasta lo mismo en la ruta con el asiento lleno o vacío." },
+    { t:"Souvenir de despedida para cada viajero", lado:0, why:"Un detalle por persona es un costo variable de manual." },
+    { t:"Alquiler del salón para la charla de bienvenida", lado:1, why:"El salón se paga por el bloque de horas, no por asistente." }
+  ]
+};
+
+/* ============ 2 · Tinder: directo o indirecto ============ */
+const TINDER_DI = {
+  izq:"Directo", der:"Indirecto",
+  ayudaIzq:"Si el viaje no se hace, no existe",
+  ayudaDer:"Se paga aunque no viaje nadie",
+  items:[
+    { t:"Lancha a las Islas del Rosario", lado:0, why:"Si el grupo no viaja, no contratas la lancha. Directo." },
+    { t:"Arriendo de la oficina", lado:1, why:"Se paga el primero de cada mes, viaje quien viaje." },
+    { t:"Almuerzos incluidos en el paquete", lado:0, why:"Nacen con el viaje y mueren con él." },
+    { t:"Renovación del RNT", lado:1, why:"Es un requisito anual de la agencia, no de un paquete." },
+    { t:"Guía acompañante del recorrido", lado:0, why:"Se contrata para esa salida en concreto." },
+    { t:"Internet y servicios de la oficina", lado:1, why:"Corren aunque el mes esté vacío." },
+    { t:"Noches de hotel de los pasajeros", lado:0, why:"Se reservan para ese viaje y para nadie más." },
+    { t:"Póliza de responsabilidad civil de la agencia", lado:1, why:"Protege a la empresa todo el año, no a un viaje puntual." },
+    { t:"Entradas a los sitios del itinerario", lado:0, why:"Se compran para esa salida." },
+    { t:"Pauta en redes sociales", lado:1, why:"Atrae clientes en general, no se le puede cargar a un solo paquete." },
+    { t:"Seguro de asistencia de los viajeros", lado:0, why:"Se emite por los pasajeros de ese viaje." },
+    { t:"Honorarios del contador", lado:1, why:"Sostiene la operación entera, mes a mes." },
+    { t:"Traslado del aeropuerto al hotel", lado:0, why:"Existe solo porque ese grupo llegó." },
+    { t:"Suscripción a la plataforma de cotizaciones", lado:1, why:"Se paga mensual, la uses mucho o poco." }
+  ]
+};
+
+/* ============ 3 · Deslizador de pasajeros ============ */
+const PAQUETE_DESLIZADOR = {
+  nombre:"Día completo en las Islas del Rosario",
+  lineas:[
+    { t:"Lancha ida y vuelta (capacidad 12)", tipo:"fijo", valor:900000 },
+    { t:"Guía acompañante por el día", tipo:"fijo", valor:250000 },
+    { t:"Permiso de ingreso al área protegida (grupo)", tipo:"fijo", valor:120000 },
+    { t:"Almuerzo por pasajero", tipo:"variable", valor:55000 },
+    { t:"Entrada al oceanario por pasajero", tipo:"variable", valor:45000 },
+    { t:"Seguro de asistencia por pasajero", tipo:"variable", valor:12000 },
+    { t:"Hidratación y snack por pasajero", tipo:"variable", valor:8000 },
+    { t:"Chaleco salvavidas por pasajero", tipo:"variable", valor:5000 }
+  ],
+  min:2, max:20, inicio:2,
+  preguntas:[
+    { q:"Con 2 pasajeros, ¿cuánto cuesta cada uno? (aproximado)",
+      ops:["Cerca de $125.000","Cerca de $250.000","Cerca de $760.000","Cerca de $1.270.000"], ok:2,
+      why:"Los $1.270.000 fijos se reparten entre dos, así que cada uno carga $635.000 solo de lancha, guía y permiso, más $125.000 de variables." },
+    { q:"Al pasar de 2 a 12 pasajeros, ¿qué pasa con el costo por persona?",
+      ops:["Baja muchísimo","Baja un poquito","Se queda igual","Sube"], ok:0,
+      why:"Los fijos ya no se dividen entre 2 sino entre 12. Esa es toda la magia del tamaño del grupo." },
+    { q:"¿Por qué el costo por persona nunca baja de cierto punto?",
+      ops:["Porque el proveedor no deja","Porque los costos variables se pagan igual por cada pasajero","Porque la lancha se llena","Porque hay que pagar impuestos"], ok:1,
+      why:"Los variables ($125.000 por cabeza aquí) no se reparten: son un piso que nunca se cruza por más gente que entre." }
+  ]
+};
+
+/* ============ 4 · El presupuesto ============ */
+const SOPA_GRID = ["LIOAATORUGES","LSRRIRLRRBLJ","JUORUAEREZRA","SVDIGSTDZAZS","EEAELLODPIOB","RNTNPAHCLZCH","VTNDLDGORLPA","IROOCOPEDAGT","CACQTSUMLNZU","IDSBXMCENCNA","OAOCLIQQHHNP","SSRAZPVSSAHV"];
+/* Cada palabra corresponde a una línea del presupuesto de abajo */
+const SOPA_PALABRAS = ["LANCHA","HOTEL","GUIA","ALMUERZOS","ENTRADAS","SEGURO","TRASLADOS","ARRIENDO","SERVICIOS","POLIZA","CONTADOR","PAUTA"];
+
+const PRESUPUESTO = {
+  nombre:"Tour 2 días · Cartagena y Barú · 6 pasajeros",
+  items:[
+    { t:"Lancha a Barú (grupo)", palabra:"LANCHA", clase:"directo", vf:"fijo", valor:780000 },
+    { t:"Hotel · 6 noches-habitación", palabra:"HOTEL", clase:"directo", vf:"variable", valor:1080000 },
+    { t:"Guía acompañante · 2 días", palabra:"GUIA", clase:"directo", vf:"fijo", valor:400000 },
+    { t:"Almuerzos · 6 pasajeros × 2 días", palabra:"ALMUERZOS", clase:"directo", vf:"variable", valor:660000 },
+    { t:"Entradas a los sitios · 6 pasajeros", palabra:"ENTRADAS", clase:"directo", vf:"variable", valor:270000 },
+    { t:"Seguro de asistencia · 6 pasajeros", palabra:"SEGURO", clase:"directo", vf:"variable", valor:72000 },
+    { t:"Van para los traslados (grupo)", palabra:"TRASLADOS", clase:"directo", vf:"fijo", valor:320000 },
+    { t:"Arriendo de la oficina (cuota del mes)", palabra:"ARRIENDO", clase:"indirecto", valor:180000 },
+    { t:"Servicios e internet (cuota del mes)", palabra:"SERVICIOS", clase:"indirecto", valor:60000 },
+    { t:"Póliza de responsabilidad civil (cuota)", palabra:"POLIZA", clase:"indirecto", valor:90000 },
+    { t:"Honorarios del contador (cuota)", palabra:"CONTADOR", clase:"indirecto", valor:75000 },
+    { t:"Pauta en redes (cuota del mes)", palabra:"PAUTA", clase:"indirecto", valor:120000 }
+  ],
+  pasajeros:6
+};
+
+/* ============ 5 · Verdadero o falso ============ */
+const VOF = [
+  { t:"Si vendo más caro que la competencia, gano más.", ok:false,
+    why:"Ganas más solo si tus costos lo permiten. Se puede vender carísimo y perder plata si nunca sumaste lo que cuesta operar." },
+  { t:"Mi tiempo diseñando el paquete es un costo.", ok:true,
+    why:"Las horas de investigación, cotización y coordinación valen. No contarlas es regalar trabajo y creer que se ganó." },
+  { t:"Si este mes no viajó nadie, no gasté nada.", ok:false,
+    why:"El arriendo, el internet, la póliza y el contador se pagaron igual. Ese es el costo indirecto." },
+  { t:"El costo por persona siempre baja cuando el grupo crece.", ok:false,
+    why:"Baja la parte fija. Los variables se pagan igual por cada cabeza, y esos ponen un piso." },
+  { t:"La lancha completa es un costo fijo del grupo.", ok:true,
+    why:"Vale lo mismo lleve 4 o 12 pasajeros. No cambia con el número de personas." },
+  { t:"Los costos indirectos se le cargan a un solo paquete.", ok:false,
+    why:"Se reparten entre todos los pasajeros del mes. Cargárselos a uno solo lo saca del mercado." },
+  { t:"Conviene estimar los pasajeros del mes por lo bajo.", ok:true,
+    why:"Si estimas de más, la cuota queda corta y los indirectos se comen la ganancia." },
+  { t:"Un paquete con 2 pasajeros y otro con 10 cuestan lo mismo por persona.", ok:false,
+    why:"Con 2 personas los fijos se dividen entre dos. Es la diferencia entre vender y no vender." },
+  { t:"El hotel se cobra por habitación, no por persona.", ok:true,
+    why:"Confundir la unidad de cobro es el error más caro al cotizar. Seis pasajeros no son seis habitaciones." },
+  { t:"Costo total y precio de venta son lo mismo.", ok:false,
+    why:"Entre los dos va tu ganancia. Si son iguales, trabajaste gratis." },
+  { t:"El seguro de asistencia de los viajeros es un costo directo.", ok:true,
+    why:"Se emite para los pasajeros de ese viaje. Sin viaje, no hay póliza." },
+  { t:"Saber el mínimo de pasajeros es opcional.", ok:false,
+    why:"Es lo que va escrito en las condiciones. Sin ese número puedes quedar obligado a operar a pérdida." }
+];
+
+const PARADAS = [
+  { id:"vf", titulo:"Variable o fijo", sub:"14 líneas de costo, un dedo", max:14 },
+  { id:"di", titulo:"Directo o indirecto", sub:"14 líneas más, otra pregunta", max:14 },
+  { id:"desliza", titulo:"El tamaño del grupo", sub:"Mueve la barra y descubre", max:3 },
+  { id:"presu", titulo:"El presupuesto", sub:"Búscalos, ordénalos, cuadra el total", max:12 },
+  { id:"vof", titulo:"Verdadero o falso", sub:"12 frases que suenan bien", max:12 }
+];
+const MAX_TOTAL = PARADAS.reduce((s,p) => s + p.max, 0);
+
+</script>
+<script>
+/* ============ Firebase: se carga aparte y nunca bloquea la página ============ */
+let db = null;
+const COL = 'trippyData', PRE = 'costos1:';
+const local = {};
+
+function cargarScript(src, ms){
+  return new Promise(res => {
+    const s = document.createElement('script');
+    let listo = false;
+    const fin = ok => { if(!listo){ listo = true; res(ok); } };
+    s.src = src; s.async = true;
+    s.onload = () => fin(true);
+    s.onerror = () => fin(false);
+    document.head.appendChild(s);
+    setTimeout(() => fin(false), ms || 6000);
+  });
+}
+const firebaseListo = (async () => {
+  try{
+    const base = 'https://www.gstatic.com/firebasejs/10.7.1/';
+    if(!await cargarScript(base + 'firebase-app-compat.js', 6000)) return null;
+    if(!await cargarScript(base + 'firebase-firestore-compat.js', 6000)) return null;
+    if(typeof firebase === 'undefined') return null;
+    firebase.initializeApp({
+      apiKey: "AIzaSyCywGviYC0mQ1xUmnEdy2WX3nR_X5VcHzY",
+      authDomain: "trippy-clase2.firebaseapp.com",
+      projectId: "trippy-clase2",
+      storageBucket: "trippy-clase2.firebasestorage.app",
+      messagingSenderId: "954590703003",
+      appId: "1:954590703003:web:539e5743ef48d75f2a453e"
+    });
+    db = firebase.firestore();
+    return db;
+  }catch(e){ return null; }
+})();
+
+async function guardarDoc(k, v){
+  await firebaseListo;
+  if(db){ try{ await db.collection(COL).doc(k).set({ value: JSON.stringify(v) }); return; }catch(e){} }
+  local[k] = v;
+}
+async function leerDoc(k){
+  await firebaseListo;
+  if(db){ try{ const d = await db.collection(COL).doc(k).get(); return d.exists ? JSON.parse(d.data().value) : null; }catch(e){} }
+  return local[k] || null;
+}
+
+const roster = ["Belen Castro","Mari Sol Garcia","Maria Jose Coneo","Sareiny Suarez","Stephania Marichal","Melanie Osorio","Valeria Torres"];
+
+/* Avisar solo si de verdad no hubo conexión */
+firebaseListo.then(x => { if(!x) { const el = document.getElementById('offline-msg'); if(el) el.style.display = 'block'; } });
+
+/* ============ Estado ============ */
+let yo = null, act = null, paso = null;
+function $(id){ return document.getElementById(id); }
+function irA(v){
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  $('view-' + v).classList.add('active');
+  window.scrollTo(0,0);
+  if(v === 'mapa') pintarMapa();
+}
+function nuevoYo(nombre){
+  return { nombre, puntos:{}, hechas:{}, detalle:{}, ts:Date.now() };
+}
+function total(){ return Object.values(yo.puntos).reduce((s,x) => s + x, 0); }
+async function guardarme(){
+  yo.ts = Date.now();
+  await guardarDoc(PRE + yo.nombre.toLowerCase(), yo);
+}
+async function entrar(){
+  const n = $('in-roster').value;
+  if(!n){ $('login-warn').classList.add('show'); return; }
+  $('login-warn').classList.remove('show');
+  const prev = await leerDoc(PRE + n.toLowerCase());
+  yo = prev || nuevoYo(n);
+  yo.nombre = n;
+  irA('mapa');
+}
+function salir(){ yo = null; irA('login'); }
+
+function pintarMapa(){
+  if(!yo) return;
+  $('hdr-nombre').textContent = yo.nombre;
+  $('hdr-pts').textContent = total() + '/' + MAX_TOTAL;
+  $('lista-paradas').innerHTML = PARADAS.map((p,i) => {
+    const hecha = yo.hechas[p.id];
+    return `<div class="parada ${hecha ? 'hecha' : ''}" onclick="abrir('${p.id}')">
+      <div class="n">${hecha ? '✓' : i+1}</div>
+      <div class="tx"><b>${p.titulo}</b><span>${p.sub}</span></div>
+      <div class="sc">${hecha ? (yo.puntos[p.id]||0) + '/' + p.max : ''}</div>
+    </div>`;
+  }).join('');
+  const listas = PARADAS.filter(p => yo.hechas[p.id]).length;
+  const c = $('cierre');
+  if(listas === PARADAS.length){
+    c.style.display = 'block';
+    c.innerHTML = `<span class="tag">Terminaste</span>
+      <div class="veredicto"><div class="ico">🧮</div><h2>${total()} de ${MAX_TOTAL}</h2>
+      <div class="gan">Las cinco paradas completas</div></div>
+      <p class="mini">Puedes repetir cualquiera: se queda el mejor puntaje.</p>`;
+  } else c.style.display = 'none';
+}
+
+function abrir(id){
+  act = id;
+  const p = PARADAS.find(x => x.id === id);
+  $('act-tit').textContent = p.titulo;
+  $('act-sub').textContent = p.sub;
+  paso = null;
+  irA('act');
+  if(id === 'vf' || id === 'di') iniTinder(id);
+  if(id === 'desliza') iniDesliza();
+  if(id === 'presu') iniPresu();
+  if(id === 'vof') iniVof();
+}
+async function cerrarParada(id, pts){
+  const previo = yo.puntos[id] || 0;
+  if(!yo.hechas[id] || pts > previo) yo.puntos[id] = pts;
+  yo.hechas[id] = true;
+  await guardarme();
+}
+
+/* ============ 1 y 2 · Tinder ============ */
+function datosTinder(id){ return id === 'vf' ? TINDER_VF : TINDER_DI; }
+function iniTinder(id){
+  const d = datosTinder(id);
+  paso = { i:0, dado:[], orden: d.items.map((_,k) => k).sort(() => Math.random() - .5) };
+  pintarTinder();
+}
+function pintarTinder(){
+  const d = datosTinder(act), b = $('act-body');
+  if(paso.i >= paso.orden.length) return cerrarTinder();
+  const it = d.items[paso.orden[paso.i]];
+  const pct = (paso.i / paso.orden.length) * 100;
+  b.innerHTML = `<div class="panel"><span class="tag">Clasifica</span>
+    <div class="tprog">${paso.i + 1} de ${paso.orden.length}</div>
+    <div class="tbar"><i style="width:${pct}%;"></i></div>
+    <div class="tcard">${it.t}</div>
+    <div class="tbtns">
+      <button class="izq" onclick="tinderTap(0)">${d.izq}<small>${d.ayudaIzq}</small></button>
+      <button class="der" onclick="tinderTap(1)">${d.der}<small>${d.ayudaDer}</small></button>
+    </div>
+    <p class="mini" style="text-align:center;">Al final te digo cómo te fue. No se puede corregir.</p></div>`;
+}
+function tinderTap(lado){
+  paso.dado.push({ k: paso.orden[paso.i], lado });
+  paso.i++;
+  pintarTinder();
+}
+async function cerrarTinder(){
+  const d = datosTinder(act);
+  const ac = paso.dado.filter(x => d.items[x.k].lado === x.lado).length;
+  await cerrarParada(act, ac);
+  yo.detalle[act] = paso.dado.map(x => ({ t: d.items[x.k].t, ok: d.items[x.k].lado === x.lado }));
+  await guardarme();
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Resultado</span>
+    <div class="veredicto"><div class="ico">${ac === d.items.length ? '🎯' : ac >= d.items.length*0.7 ? '👍' : '😅'}</div>
+      <h2>${ac} de ${d.items.length}</h2><div class="gan">${ac === d.items.length ? 'Perfecto' : 'Mira dónde se fueron'}</div></div>
+    <div class="repaso">${paso.dado.map(x => {
+      const it = d.items[x.k], bien = it.lado === x.lado;
+      return `<div class="rep-row ${bien ? '' : 'mal'}">
+        <span class="mk">${bien ? '✓' : '✕'}</span>
+        <span><b>${it.t}</b> — ${it.lado === 0 ? d.izq : d.der}${bien ? '' : '<br>' + it.why}</span></div>`;
+    }).join('')}</div>
+    <div class="row-btns">
+      <button class="btn ghost sm" onclick="abrir('${act}')">Repetir</button>
+      <button class="btn secondary sm" onclick="irA('mapa')">Seguir</button></div></div>`;
+}
+
+/* ============ 3 · Deslizador ============ */
+function iniDesliza(){
+  paso = { n: PAQUETE_DESLIZADOR.inicio, q:0, dado:[], explorado:new Set([PAQUETE_DESLIZADOR.inicio]) };
+  pintarDesliza();
+}
+function plata(v){ return '$' + Math.round(v).toLocaleString('es-CO'); }
+function costoPersona(n){
+  const p = PAQUETE_DESLIZADOR;
+  const fijo = p.lineas.filter(l => l.tipo === 'fijo').reduce((s,l) => s + l.valor, 0);
+  const varr = p.lineas.filter(l => l.tipo === 'variable').reduce((s,l) => s + l.valor, 0);
+  return fijo / n + varr;
+}
+function moverN(v){
+  paso.n = +v;
+  paso.explorado.add(paso.n);
+  pintarDesliza();
+}
+function pintarDesliza(){
+  const p = PAQUETE_DESLIZADOR, b = $('act-body');
+  if(paso.q > 0) return pintarPreguntasDesliza();
+  const cp = costoPersona(paso.n);
+  b.innerHTML = `<div class="panel"><span class="tag">${p.nombre}</span>
+    <div class="slider-wrap">
+      <div class="big">${plata(cp)}</div>
+      <div class="lbl">costo por pasajero · ${paso.n} ${paso.n === 1 ? 'persona' : 'personas'}</div>
+      <input type="range" min="${p.min}" max="${p.max}" value="${paso.n}" oninput="moverN(this.value)">
+      <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:#777;">
+        <span>${p.min}</span><span>${p.max} pasajeros</span></div>
+    </div>
+    <div class="lineas">${p.lineas.map(l => {
+      const porPersona = l.tipo === 'fijo' ? l.valor / paso.n : l.valor;
+      return `<div class="linea">
+        <span class="et ${l.tipo === 'fijo' ? 'f' : 'v'}">${l.tipo === 'fijo' ? 'fijo' : 'var'}</span>
+        <span class="nm">${l.t}</span>
+        <span class="vl ${l.tipo === 'fijo' ? 'baja' : ''}">${plata(porPersona)}</span></div>`;
+    }).join('')}</div>
+    <p class="mini">Mueve la barra y mira cuáles cifras bajan y cuáles no se mueven. Esta parte no tiene puntos.</p>
+    <button class="btn" style="margin-top:12px;" ${paso.explorado.size < 4 ? 'disabled' : ''} onclick="paso.q=1;pintarDesliza();">
+      ${paso.explorado.size < 4 ? 'Prueba con más tamaños de grupo' : 'Listo, a las preguntas'}</button></div>`;
+}
+function pintarPreguntasDesliza(){
+  const p = PAQUETE_DESLIZADOR, b = $('act-body');
+  const i = paso.q - 1;
+  if(i >= p.preguntas.length) return cerrarDesliza();
+  const q = p.preguntas[i];
+  b.innerHTML = `<div class="panel"><span class="tag">Pregunta ${paso.q} de ${p.preguntas.length}</span>
+    <h3 style="font-size:20px; line-height:1.25;">${q.q}</h3>
+    <div style="display:flex; flex-direction:column; gap:9px; margin-top:14px;">
+      ${q.ops.map((o,k) => `<button class="ficha" style="width:100%; font-size:14px; padding:12px 13px;" onclick="respDesliza(${k})">${o}</button>`).join('')}
+    </div>
+    <div class="feedback" id="fb-desliza"></div></div>`;
+}
+function respDesliza(k){
+  const q = PAQUETE_DESLIZADOR.preguntas[paso.q - 1];
+  const bien = k === q.ok;
+  paso.dado.push(bien);
+  const fb = $('fb-desliza');
+  fb.className = 'feedback show ' + (bien ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${bien ? 'Correcto.' : 'No era esa.'}</b> ${q.why}
+    <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.q++;pintarDesliza();">Seguir</button>`;
+}
+async function cerrarDesliza(){
+  const ac = paso.dado.filter(Boolean).length;
+  await cerrarParada('desliza', ac);
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Resultado</span>
+    <div class="veredicto"><div class="ico">${ac === 3 ? '🎯' : '👍'}</div><h2>${ac} de 3</h2>
+      <div class="gan">Ahora ya sabes por qué un grupo pequeño duele</div></div>
+    <div class="row-btns">
+      <button class="btn ghost sm" onclick="abrir('desliza')">Repetir</button>
+      <button class="btn secondary sm" onclick="irA('mapa')">Seguir</button></div></div>`;
+}
+
+/* ============ 4 · El presupuesto ============ */
+const WS_DIRS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
+function iniPresu(){
+  paso = { fase:'sopa', found:[], anchor:null, col:{}, vf:{}, sel:null, intentos:0 };
+  pintarPresu();
+}
+function ubicarPalabra(w){
+  for(let r=0;r<12;r++) for(let c=0;c<12;c++) for(const d of WS_DIRS){
+    const er = r + d[0]*(w.length-1), ec = c + d[1]*(w.length-1);
+    if(er<0||er>11||ec<0||ec>11) continue;
+    let m = true;
+    for(let i=0;i<w.length;i++) if(SOPA_GRID[r+d[0]*i][c+d[1]*i] !== w[i]){ m = false; break; }
+    if(m) return { r, c, dr:d[0], dc:d[1] };
+  }
+  return null;
+}
+function celdasHalladas(){
+  const s = new Set();
+  paso.found.forEach(w => { const l = ubicarPalabra(w); if(l) for(let i=0;i<w.length;i++) s.add((l.r+l.dr*i)+','+(l.c+l.dc*i)); });
+  return s;
+}
+function pintarPresu(){
+  if(paso.fase === 'sopa') return pintarSopa();
+  return pintarCuadro();
+}
+function pintarSopa(){
+  const found = celdasHalladas();
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Paso 1 · La sopa</span>
+    <p class="mini" style="margin:0 0 10px;">Encuentra las doce líneas del presupuesto. Toca la primera letra y después la última.</p>
+    <div class="ws-chips">${SOPA_PALABRAS.map(w => `<span class="ws-chip ${paso.found.includes(w) ? 'found' : ''}">${w}</span>`).join('')}</div>
+    <div class="ws-grid">${SOPA_GRID.map((row,r) => row.split('').map((ch,c) => {
+      const f = found.has(r+','+c), a = paso.anchor && paso.anchor[0]===r && paso.anchor[1]===c;
+      return `<div class="ws-cell ${f?'found':''} ${a?'anchor':''}" onclick="sopaTap(${r},${c})">${ch}</div>`;
+    }).join('')).join('')}</div>
+    <div class="feedback" id="fb-sopa"></div>
+    <button class="btn" style="margin-top:13px;" ${paso.found.length < SOPA_PALABRAS.length ? 'disabled' : ''} onclick="paso.fase='cuadro';pintarPresu();">
+      ${paso.found.length < SOPA_PALABRAS.length ? `Faltan ${SOPA_PALABRAS.length - paso.found.length}` : 'Ahora ordénalas'}</button></div>`;
+}
+function sopaTap(r,c){
+  const fb = $('fb-sopa');
+  if(!paso.anchor){ paso.anchor = [r,c]; return pintarPresu(); }
+  const [ar,ac] = paso.anchor;
+  if(ar===r && ac===c){ paso.anchor = null; return pintarPresu(); }
+  const dr = Math.sign(r-ar), dc = Math.sign(c-ac);
+  const largo = Math.max(Math.abs(r-ar), Math.abs(c-ac)) + 1;
+  const recto = (r===ar) || (c===ac) || (Math.abs(r-ar) === Math.abs(c-ac));
+  let w = '';
+  if(recto) for(let i=0;i<largo;i++) w += SOPA_GRID[ar+dr*i][ac+dc*i];
+  paso.anchor = null;
+  const hit = SOPA_PALABRAS.find(x => x === w);
+  if(hit && !paso.found.includes(hit)){
+    paso.found.push(hit);
+    fb.className = 'feedback show ok';
+    fb.innerHTML = `<b>${hit}.</b> Van ${paso.found.length} de ${SOPA_PALABRAS.length}.`;
+  } else {
+    fb.className = 'feedback show';
+    fb.innerHTML = hit ? 'Esa ya la tenías.' : 'Ahí no hay ninguna. Toca la primera letra y después la última.';
+  }
+  pintarPresu();
+}
+function pintarCuadro(){
+  const P = PRESUPUESTO;
+  const sinUbicar = P.items.filter(it => !paso.col[it.palabra]);
+  const dir = P.items.filter(it => paso.col[it.palabra] === 'directo');
+  const ind = P.items.filter(it => paso.col[it.palabra] === 'indirecto');
+  const faltaVf = dir.filter(it => !paso.vf[it.palabra]).length;
+  const completo = sinUbicar.length === 0 && faltaVf === 0;
+
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Paso 2 · Ordena</span>
+    <p class="mini" style="margin:0 0 6px;"><b>${P.nombre}</b></p>
+    <p class="mini" style="margin:0;">Toca una línea y luego la columna donde va. En los directos, marca además si es variable o fijo.</p>
+    <div class="bolsa">${sinUbicar.map(it =>
+      `<button class="ficha ${paso.sel === it.palabra ? 'sel' : ''}" onclick="pickFicha('${it.palabra}')">${it.t}</button>`).join('')
+      || '<span class="mini">Todas ubicadas.</span>'}</div>
+    <div class="cols">
+      <div class="col" onclick="soltar('directo')"><h4>Directos</h4><div class="cuenta">${dir.length} líneas</div>
+        <div class="puestos">${dir.map(it => `
+          <div class="puesto" onclick="event.stopPropagation();sacar('${it.palabra}')">${it.t}
+            <div class="vfrow">
+              <button class="${paso.vf[it.palabra]==='variable'?'on':''}" onclick="event.stopPropagation();setVf('${it.palabra}','variable')">Variable</button>
+              <button class="${paso.vf[it.palabra]==='fijo'?'on':''}" onclick="event.stopPropagation();setVf('${it.palabra}','fijo')">Fijo</button>
+            </div></div>`).join('')}</div></div>
+      <div class="col" onclick="soltar('indirecto')"><h4>Indirectos</h4><div class="cuenta">${ind.length} líneas</div>
+        <div class="puestos">${ind.map(it => `
+          <div class="puesto" onclick="event.stopPropagation();sacar('${it.palabra}')">${it.t}</div>`).join('')}</div></div>
+    </div>
+    <div class="feedback" id="fb-cuadro"></div>
+    <button class="btn" style="margin-top:13px;" ${completo ? '' : 'disabled'} onclick="revisarCuadro()">
+      ${completo ? 'Cuadrar el presupuesto' : (sinUbicar.length ? `Faltan ${sinUbicar.length} por ubicar` : `Marca variable o fijo en ${faltaVf}`)}</button>
+    <div id="resultado-presu"></div></div>`;
+}
+function pickFicha(p){ paso.sel = paso.sel === p ? null : p; pintarPresu(); }
+function soltar(col){ if(!paso.sel) return; paso.col[paso.sel] = col; if(col === 'indirecto') delete paso.vf[paso.sel]; paso.sel = null; pintarPresu(); }
+function sacar(p){ delete paso.col[p]; delete paso.vf[p]; paso.sel = null; pintarPresu(); }
+function setVf(p,v){ paso.vf[p] = v; pintarPresu(); }
+async function revisarCuadro(){
+  const P = PRESUPUESTO;
+  let mal = 0;
+  P.items.forEach(it => {
+    if(paso.col[it.palabra] !== it.clase) mal++;
+    else if(it.clase === 'directo' && paso.vf[it.palabra] !== it.vf) mal++;
+  });
+  const fb = $('fb-cuadro');
+  if(mal > 0){
+    paso.intentos++;
+    fb.className = 'feedback show bad';
+    fb.innerHTML = `<b>Tienes ${mal} ${mal === 1 ? 'línea mal ubicada' : 'líneas mal ubicadas'}.</b> No te digo cuáles: revisa y corrige. Pregúntate si ese gasto existiría aunque el viaje no se hiciera, y si cambia con cada pasajero.`;
+    return;
+  }
+  const tot = P.items.reduce((s,it) => s + it.valor, 0);
+  const totDir = P.items.filter(i => i.clase === 'directo').reduce((s,i) => s + i.valor, 0);
+  const totInd = tot - totDir;
+  const pts = Math.max(4, PARADAS.find(p => p.id === 'presu').max - paso.intentos * 2);
+  await cerrarParada('presu', pts);
+  fb.className = 'feedback show ok';
+  fb.innerHTML = `<b>Cuadró.</b> ${paso.intentos === 0 ? 'A la primera.' : 'Te tomó ' + (paso.intentos + 1) + ' intentos.'}`;
+  $('resultado-presu').innerHTML = `
+    <div class="total-box">
+      <div class="cifra">${plata(tot)}</div>
+      <div class="det">costo total del paquete</div>
+      <div class="det" style="margin-top:9px;">Directos ${plata(totDir)} · Indirectos ${plata(totInd)}</div>
+      <div class="det" style="margin-top:7px; font-size:14px;"><b>${plata(tot / P.pasajeros)}</b> por pasajero</div>
+    </div>
+    <p class="mini">Ese es el costo, todavía no el precio. Lo que va entre uno y otro es tu ganancia.</p>
+    <div class="row-btns">
+      <button class="btn ghost sm" onclick="abrir('presu')">Repetir</button>
+      <button class="btn secondary sm" onclick="irA('mapa')">Seguir</button></div>`;
+}
+
+/* ============ 5 · Verdadero o falso ============ */
+function iniVof(){
+  paso = { i:0, dado:[], orden: VOF.map((_,k) => k).sort(() => Math.random() - .5) };
+  pintarVof();
+}
+function pintarVof(){
+  if(paso.i >= paso.orden.length) return cerrarVof();
+  const v = VOF[paso.orden[paso.i]];
+  const pct = (paso.i / paso.orden.length) * 100;
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Verdadero o falso</span>
+    <div class="tprog">${paso.i + 1} de ${paso.orden.length}</div>
+    <div class="tbar"><i style="width:${pct}%;"></i></div>
+    <div class="vof-card">${v.t}</div>
+    <div class="vof-btns">
+      <button class="v" onclick="vofTap(true)">Verdadero</button>
+      <button class="f" onclick="vofTap(false)">Falso</button></div>
+    <div class="feedback" id="fb-vof"></div></div>`;
+}
+function vofTap(r){
+  const v = VOF[paso.orden[paso.i]];
+  const bien = r === v.ok;
+  paso.dado.push(bien);
+  const fb = $('fb-vof');
+  fb.className = 'feedback show ' + (bien ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${bien ? 'Bien.' : 'Era ' + (v.ok ? 'verdadero' : 'falso') + '.'}</b> ${v.why}
+    <button class="btn secondary sm" style="margin-top:10px;" onclick="paso.i++;pintarVof();">Siguiente</button>`;
+}
+async function cerrarVof(){
+  const ac = paso.dado.filter(Boolean).length;
+  await cerrarParada('vof', ac);
+  $('act-body').innerHTML = `<div class="panel"><span class="tag">Resultado</span>
+    <div class="veredicto"><div class="ico">${ac === VOF.length ? '🎯' : ac >= 9 ? '👍' : '😅'}</div>
+      <h2>${ac} de ${VOF.length}</h2><div class="gan">Frases que suenan bien pero no lo son</div></div>
+    <div class="row-btns">
+      <button class="btn ghost sm" onclick="abrir('vof')">Repetir</button>
+      <button class="btn secondary sm" onclick="irA('mapa')">Seguir</button></div></div>`;
+}
+
+/* ============ Panel del profesor ============ */
+const PROFE_PASSWORD = 'jituand07';
+let profeOk = false;
+function entrarProfe(){
+  if($('profe-pass').value !== PROFE_PASSWORD){ $('pass-warn').classList.add('show'); return; }
+  profeOk = true;
+  $('profe-gate').style.display = 'none';
+  $('profe-body').style.display = 'block';
+  cargarNotas();
+}
+async function cargarNotas(){
+  const box = $('profe-body');
+  box.innerHTML = '<div class="panel"><span class="tag">Notas</span><p class="mini">Cargando…</p></div>';
+  const filas = [];
+  for(const n of roster){
+    const d = await leerDoc(PRE + n.toLowerCase());
+    filas.push(d || { nombre:n, pend:true });
+  }
+  filas.sort((a,b) => (b.pend ? -1 : 1) - (a.pend ? -1 : 1));
+  const conTotal = filas.map(f => Object.assign({}, f, { tot: f.pend ? 0 : Object.values(f.puntos||{}).reduce((s,x) => s+x, 0) }));
+  conTotal.sort((a,b) => b.tot - a.tot);
+  box.innerHTML = `<div class="panel"><span class="tag">Notas</span>
+    ${conTotal.map((f,i) => f.pend
+      ? `<div class="rk pend"><span class="pos">–</span><span class="nm">${f.nombre}</span><span class="sc">—</span></div>`
+      : `<div class="rk"><span class="pos">${i+1}</span>
+          <span class="nm">${f.nombre}<br><span style="font-size:10.5px; color:#777;">${PARADAS.map(p => (f.puntos||{})[p.id] !== undefined ? p.titulo.split(' ')[0] + ' ' + f.puntos[p.id] + '/' + p.max : '').filter(Boolean).join(' · ') || 'sin terminar nada'}</span></span>
+          <span class="sc">${f.tot}/${MAX_TOTAL}</span></div>`).join('')}
+    <button class="btn ghost sm" style="margin-top:12px;" onclick="cargarNotas()">Actualizar</button>
+    <button class="btn ghost sm" style="margin-top:8px;" onclick="csvNotas()">Descargar CSV</button></div>
+    <div class="panel"><span class="tag">Dónde fallaron</span>
+      ${['vf','di'].map(id => {
+        const d = datosTinder(id);
+        const cuenta = d.items.map(it => ({ t: it.t, mal:0, n:0 }));
+        conTotal.forEach(f => {
+          const det = (f.detalle||{})[id];
+          if(!det) return;
+          det.forEach(x => { const c = cuenta.find(y => y.t === x.t); if(c){ c.n++; if(!x.ok) c.mal++; } });
+        });
+        const peores = cuenta.filter(c => c.n > 0).sort((a,b) => (b.mal/b.n) - (a.mal/a.n)).slice(0,4);
+        return `<p class="mini" style="margin-top:10px;"><b>${id === 'vf' ? 'Variable o fijo' : 'Directo o indirecto'}</b></p>` +
+          (peores.length ? peores.map(c => `<div class="rep-row"><span class="mk">${c.mal ? '✕' : '✓'}</span><span>${c.t} — ${c.mal} de ${c.n} lo fallaron</span></div>`).join('')
+                         : '<p class="mini">Todavía nadie la ha hecho.</p>');
+      }).join('')}
+    </div>`;
+  window._notas = conTotal;
+}
+function csvNotas(){
+  const f = window._notas || [];
+  const head = 'Nombre,' + PARADAS.map(p => p.titulo + ' (' + p.max + ')').join(',') + ',Total (' + MAX_TOTAL + ')\n';
+  const body = f.map(x => x.pend ? `${x.nombre},,,,,,Sin empezar`
+    : `${x.nombre},${PARADAS.map(p => (x.puntos||{})[p.id] ?? '').join(',')},${x.tot}`).join('\n');
+  const blob = new Blob([head + body], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'notas_costos.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+</script>
+</body>
+</html>
